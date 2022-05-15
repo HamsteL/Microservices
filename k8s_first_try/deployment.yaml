@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: k8s-first-try-go
+    labels:
+      app: k8s-first-try
+spec:
+    replicas: 2
+    selector:
+       matchLabels:
+          app: k8s-first-try
+    template:
+       metadata:
+          labels:
+             app: k8s-first-try
+       spec:
+          containers:
+          - name: k8s-first-try
+            image: bogadukhovd/k8s_first_try:v7
+            ports:
+                - containerPort: 8000
+            resources:
+               requests:
+                  cpu: 100m
+                  memory: 100Mi
+               limits:
+                  cpu: 100m
+                  memory: 100Mi
+            livenessProbe:
+               tcpSocket:
+                  port: 8000
+               initialDelaySeconds: 5
+               timeoutSeconds: 5
+               successThreshold: 1
+               failureThreshold: 3
+               periodSeconds: 10
+            readinessProbe:
+               httpGet:
+                  path: /health
+                  port: 8000
+               initialDelaySeconds: 5
+               timeoutSeconds: 2
+               successThreshold: 1
+               failureThreshold: 3
+               periodSeconds: 10
