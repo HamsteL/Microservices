@@ -1,0 +1,15 @@
+apiVersion: v1  
+kind: Service                                 # Type of the kubernetes resource
+metadata:
+  name: user-api-app-service              # Name of the Kubernetes resource
+  labels:                                     # Labels that will be applied to the resource
+    app: user-api-app
+spec:
+  type: NodePort                              # Gives each node an external IP that’s accessible from outside the cluster and also opens a Port.
+  selector:
+    app: user-api-app               # Selects any Pod with labels `app=user-api-app`
+  ports: 
+  - name:  web
+    port:  8000
+    targetPort: 8000
+    protocol: TCP

@@ -1,0 +1,10 @@
+appName: postgres
+
+service:
+  type: NodePort
+  appPort: 8000
+
+postgresDeloyment:
+  depName: db-postgres
+  postgresImage: postgres:14.2
+  initdbJobName: initdb-job

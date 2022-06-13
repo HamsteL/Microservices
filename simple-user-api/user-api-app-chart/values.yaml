@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image: bogadukhovd/otus-user-api:1.6.0
+
+service:
+  type: NodePort
+  appPort: "8000"
+
+ingress:
+  host: arch.homework
+
+global:
+  database:
+    dbUser: user
+    dbPassword: user_pass
+    dbName: otus-user-db
+    dbHost: db-postgres-service
+    dbPort: "5432"
+    dbDriver: postgres

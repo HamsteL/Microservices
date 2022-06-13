@@ -1,0 +1,51 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}  
+spec:
+  replicas: {{ .Release.replicaCount }}
+  selector:
+    matchLabels: 
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ .Release.Name }}
+        image: {{ .Values.image }}
+        ports:
+          - name: http
+            containerPort: {{ .Values.service.appPort }}
+        envFrom:  
+          - configMapRef:
+              name: user-api-config
+          - secretRef:
+              name: user-api-db-secrets
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 500Mi
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.service.appPort }}
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.appPort }}
+          initialDelaySeconds: 5
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 3
+          periodSeconds: 10
