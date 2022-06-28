@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-app-db-secrets
+type: Opaque
+stringData:
+  DB_HOST: {{ .Values.global.database.dbHost }}
+  DB_DRIVER: {{ .Values.global.database.dbDriver }}
+  DB_USER: {{ .Values.global.database.dbUser }}
+  DB_PASSWORD: {{ .Values.global.database.dbPassword }}
+  DB_NAME: {{ .Values.global.database.dbName }}
+  DB_PORT: "{{ .Values.global.database.dbPort }}"
+  POSTGRES_USER: {{ .Values.global.database.dbUser }}
+  POSTGRES_PASSWORD: {{ .Values.global.database.dbPassword }}
+  POSTGRES_DB: {{ .Values.global.database.dbName }}
+

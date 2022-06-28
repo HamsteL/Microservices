@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.postgresDeloyment.depName }}
+spec:
+  serviceName: {{ .Values.global.database.dbHost }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      containers:
+      - name: postgres
+        image: {{ .Values.postgresDeloyment.postgresImage }}
+        envFrom:
+        - secretRef:
+            name: user-api-db-secrets
+        ports:
+        - containerPort: {{ .Values.global.database.dbPort }}
+          name: postgredb
+        volumeMounts:
+        - name: postgredb
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+  volumeClaimTemplates:
+  - metadata:
+      name: postgredb
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 1Gi

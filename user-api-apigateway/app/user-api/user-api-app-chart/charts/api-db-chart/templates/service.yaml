@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.global.database.dbHost }}
+  labels:
+    app: {{ .Values.appName }}
+spec:
+  type: NodePort
+  ports:
+   - port: {{ .Values.global.database.dbPort }}
+  selector:
+    app: {{ .Values.appName }}

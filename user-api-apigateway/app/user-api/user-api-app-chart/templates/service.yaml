@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-api-app-service
+  labels:
+    {{- include "user-api-app-chart.labels" . | nindent 4 }}
+spec:
+  type: NodePort
+  ports: 
+  - name:  web
+    port:  {{ .Values.service.appPort }}
+    targetPort: {{ .Values.service.appPort }}
+    protocol: TCP
+  selector:
+    {{- include "user-api-app-chart.selectorLabels" . | nindent 4 }}

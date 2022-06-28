@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Values.postgresDeloyment.initdbJobName }}"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Values.postgresDeloyment.initdbJobName }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: check-db-ready
+          image: {{ .Values.postgresDeloyment.postgresImage }}
+          env:
+            - name: POSTGRES_HOST
+              value: {{ .Values.global.database.dbHost | quote }}
+            - name: POSTGRES_PORT
+              value: {{ .Values.global.database.dbPort  | quote }}
+          command:
+            - sh
+            - "-c"
+            - |
+              until pg_isready -h $POSTGRES_HOST  -p  $POSTGRES_PORT;
+              do echo waiting for database; sleep 2; done;
+      containers:
+      - name: post-install-job
+        env:
+          - name: DATABASE_URI
+            value: {{ printf "postgresql://%s:%s@%s:%s/%s" .Values.global.database.dbUser .Values.global.database.dbPassword .Values.global.database.dbHost .Values.global.database.dbPort .Values.global.database.dbName  | quote }}
+        image: {{ .Values.postgresDeloyment.postgresImage }}
+        command:
+          - sh
+          - "-c"
+          - |
+            psql $DATABASE_URI <<'EOF'
+              drop table if exists users;
+              create table if not exists users(
+                    id int GENERATED ALWAYS AS IDENTITY,
+                    first_name varchar(500),
+                    last_name varchar(500),
+                    update_date timestamp
+                );
+
+                insert into users (first_name, last_name) values ('Dmitry', 'Bogadukhov'), ('Petr', 'Smirnov');
+            EOF
+  backoffLimit: 0
