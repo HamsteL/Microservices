@@ -1,11 +1,10 @@
 package controllers
 
 import (
+	"auth-service/auth/middlewares"
 	"auth-service/auth/models"
 	"auth-service/auth/responses"
-	"encoding/hex"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
@@ -24,13 +23,8 @@ func (server *Server) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), 20)
-	if err != nil {
-		responses.ERROR(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	user, createErr := models.RegisterUser(server.AppSettings.ApiHost, server.AppSettings.ApiPort, email, hex.EncodeToString(passwordHash))
+	passwordHash := middlewares.GetStringHash(password)
+	user, createErr := models.RegisterUser(server.AppSettings.ApiHost, server.AppSettings.ApiPort, email, passwordHash)
 	if createErr != nil {
 		responses.ERROR(w, http.StatusInternalServerError, createErr)
 		return
@@ -65,15 +59,15 @@ func (server *Server) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmprErr := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
-	if cmprErr != nil && cmprErr == bcrypt.ErrMismatchedHashAndPassword {
-		responses.ERROR(w, http.StatusForbidden, cmprErr)
+	passwordHash := middlewares.GetStringHash(password)
+	if passwordHash != user.PasswordHash {
+		responses.ERROR(w, http.StatusForbidden, fmt.Errorf("Incorrect password"))
 		return
 	}
 
-	if _, ok := server.Storage.Sessions[email]; ok {
+	if server.Storage.SessionExistsByEmail(email) {
 		responses.JSON(w, http.StatusOK, map[string]string{
-			"status":    "User already authorize",
+			"status":    "User already authorized",
 			"sessionId": server.Storage.Sessions[email],
 			"email":     email,
 		})
@@ -105,4 +99,26 @@ func (server *Server) Logout(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, map[string]string{
 		"status": fmt.Sprintf("Session %s was deleted", sessionId),
 	})
+}
+
+func (server *Server) Auth(w http.ResponseWriter, r *http.Request) {
+	parseErr := r.ParseForm()
+	if parseErr != nil {
+		http.Error(w, "Please pass the data as URL form encoded", http.StatusBadRequest)
+		return
+	}
+	sessionId := r.Form.Get("sessionId")
+	reqUrl := r.Form.Get("req_url")
+
+	if !server.Storage.SessionExists(sessionId) {
+		responses.JSON(w, http.StatusUnauthorized, nil)
+		return
+	}
+
+	if len(reqUrl) < 1 {
+		responses.JSON(w, http.StatusBadRequest, "Empty URL")
+		return
+	}
+
+	http.Redirect(w, r, reqUrl, http.StatusSeeOther)
 }

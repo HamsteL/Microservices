@@ -12,5 +12,7 @@ func (server *Server) initializeRoutes() {
 	server.Router.HandleFunc("/login", server.Login).Methods("GET")
 	server.Router.HandleFunc("/logout", server.Logout).Methods("GET")
 
+	server.Router.HandleFunc("/auth{req_url:/?.*}", server.Auth).Methods("GET")
+
 	server.Router.HandleFunc("/health", server.HealthCheck).Methods("GET")
 }

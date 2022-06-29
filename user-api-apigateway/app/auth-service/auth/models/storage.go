@@ -44,21 +44,46 @@ func (storage *CookieStorage) CreateSession(email string) error {
 }
 
 func (storage *CookieStorage) DeleteSession(sessionId string) error {
-	if len(storage.Sessions) < 1 {
-		return fmt.Errorf("session is not exists")
+	email, err := storage.getSessionEmail(sessionId)
+	if err != nil {
+		return err
 	}
 
-	var sessionWasDeleted bool = false
+	delete(storage.Sessions, email)
+	return nil
+}
+
+func (storage *CookieStorage) getSessionEmail(sessionId string) (string, error) {
+	if len(storage.Sessions) < 1 {
+		return "", fmt.Errorf("session is not exists")
+	}
+
 	for email, session := range storage.Sessions {
 		if session == sessionId {
-			delete(storage.Sessions, email)
-			sessionWasDeleted = true
-			break
+			return email, nil
 		}
 	}
 
-	if !sessionWasDeleted {
-		return fmt.Errorf("session is not exists")
+	return "", fmt.Errorf("session is not exists")
+}
+
+func (storage *CookieStorage) SessionExistsByEmail(email string) bool {
+	if _, ok := storage.Sessions[email]; ok {
+		return ok
 	}
-	return nil
+
+	return false
+}
+
+func (storage *CookieStorage) SessionExists(sessionId string) bool {
+	email, err := storage.getSessionEmail(sessionId)
+	if err != nil {
+		return false
+	}
+
+	if _, ok := storage.Sessions[email]; ok {
+		return ok
+	}
+
+	return false
 }

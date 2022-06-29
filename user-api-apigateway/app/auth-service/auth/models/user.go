@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -24,15 +25,22 @@ type Password struct {
 }
 
 func FindUserByEmail(host, port, email string) (*User, error) {
-	const endpoint string = "userByEmail"
-	var url string = fmt.Sprintf("http://%s:%s/%s/%s", host, port, endpoint, email)
+	const endpoint string = "getUserByEmail"
+	var urlE string = fmt.Sprintf("http://%s:%s/%s?", host, port, endpoint)
 
-	resp, err := http.Get(url)
+	payload := url.Values{}
+	payload.Add("email", email)
+	req, err := http.NewRequest("GET", urlE+payload.Encode(), nil)
 	if err != nil {
-		_ = fmt.Errorf("No User", err)
+		_ = fmt.Errorf("Error while create request", err)
 		return nil, err
 	}
-	defer resp.Body.Close()
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		_ = fmt.Errorf("Error while get user", err)
+		return nil, err
+	}
 
 	var user User
 	errParse := json.NewDecoder(resp.Body).Decode(&user)
