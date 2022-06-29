@@ -8,7 +8,7 @@ service:
   appPort: "8000"
 
 ingress:
-  host: arch.homework
+  host: user-api-app-service.default.svc.cluster.local
 
 auth:
   authServicePort: "8111"
