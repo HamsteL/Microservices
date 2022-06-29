@@ -2,20 +2,18 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: user-api-app-ingress
-  labels:
-    {{- include "user-api-app-chart.labels" . | nindent 4 }}
   annotations:
-    nginx.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/auth-url: http://auth-service.default.svc.cluster.local/auth
 spec:
   ingressClassName: nginx
   rules:
-  - host: {{ .Values.ingress.host }}
-    http:
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: user-api-app-service
-              port: 
-                number: {{ .Values.service.appPort }}
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: user-api-app-service
+                port:
+                  number: {{ .Values.service.appPort }}

@@ -1,0 +1,15 @@
+replicaCount: 1
+
+image:
+  repo: bogadukhovd/user-api-auth
+
+service:
+  type: NodePort
+  appPort: "8000"
+
+ingress:
+  host: arch.homework
+
+auth:
+  authServicePort: "8111"
+  secret: verySecretString

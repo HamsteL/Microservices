@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repo: bogadukhovd/user-api-prometheus
+  repo: bogadukhovd/otus-user-api
 
 service:
   type: NodePort
@@ -18,7 +18,3 @@ global:
     dbHost: db-postgres-service
     dbPort: "5432"
     dbDriver: postgres
-
-metrics:
-  serviceMonitor:
-    enabled: true

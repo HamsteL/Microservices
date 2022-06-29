@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-config
+data:
+    API_PORT: "{{ .Values.service.appPort }}"
+    API_HOST: {{ .Values.ingress.host }}
+    AUTH_PORT: "{{ .Values.auth.authServicePort }}"
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: auth-secrets
+type: Opaque
+stringData:
+  SIGN_SECRET: "{{ .Values.auth.secret }}"
+
