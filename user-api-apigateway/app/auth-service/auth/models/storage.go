@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"time"
 )
 
@@ -35,6 +35,7 @@ func (storage *CookieStorage) CreateSession(email string) error {
 
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, error := token.SignedString([]byte(storage.signSecret))
+
 	if error != nil {
 		return fmt.Errorf("Error while create session", error)
 	}
@@ -75,15 +76,15 @@ func (storage *CookieStorage) SessionExistsByEmail(email string) bool {
 	return false
 }
 
-func (storage *CookieStorage) SessionExists(sessionId string) bool {
+func (storage *CookieStorage) SessionExists(sessionId string) (bool, string) {
 	email, err := storage.getSessionEmail(sessionId)
 	if err != nil {
-		return false
+		return false, ""
 	}
 
 	if _, ok := storage.Sessions[email]; ok {
-		return ok
+		return true, email
 	}
 
-	return false
+	return false, ""
 }

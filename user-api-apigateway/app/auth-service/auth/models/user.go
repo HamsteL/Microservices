@@ -1,6 +1,7 @@
 package models
 
 import (
+	"auth-service/auth/middlewares"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -57,8 +58,8 @@ func RegisterUser(host, port, email, passwordHash string) (*User, error) {
 	var url string = fmt.Sprintf("http://%s:%s/%s", host, port, endpoint)
 
 	postBody, _ := json.Marshal(map[string]string{
-		"email":    email,
-		"password": passwordHash,
+		"email":         email,
+		"password_hash": passwordHash,
 	})
 	responseBody := bytes.NewBuffer(postBody)
 
@@ -77,4 +78,13 @@ func RegisterUser(host, port, email, passwordHash string) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func IsPasswordsMatch(password, userPasswordHash string) bool {
+	passwordHash := middlewares.GetStringHash(password)
+	if passwordHash != userPasswordHash {
+		return false
+	}
+
+	return true
 }

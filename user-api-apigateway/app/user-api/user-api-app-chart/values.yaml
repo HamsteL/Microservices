@@ -18,3 +18,5 @@ global:
     dbHost: db-postgres-service
     dbPort: "5432"
     dbDriver: postgres
+  jwt:
+    signSecret: verySecretString

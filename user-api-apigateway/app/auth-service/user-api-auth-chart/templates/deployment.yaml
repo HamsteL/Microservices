@@ -18,9 +18,9 @@ spec:
       - name: {{ .Release.Name }}
         image: "{{ .Values.image.repo }}:{{ .Chart.AppVersion }}"
         ports:
-          - name: http
-            containerPort: {{ .Values.auth.authServicePort }}
+          - containerPort: {{ .Values.auth.authServicePort }}
             protocol: TCP
+        imagePullPolicy: Always
         envFrom:  
           - configMapRef:
               name: auth-config

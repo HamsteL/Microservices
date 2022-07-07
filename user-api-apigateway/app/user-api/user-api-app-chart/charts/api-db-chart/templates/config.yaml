@@ -13,4 +13,5 @@ stringData:
   POSTGRES_USER: {{ .Values.global.database.dbUser }}
   POSTGRES_PASSWORD: {{ .Values.global.database.dbPassword }}
   POSTGRES_DB: {{ .Values.global.database.dbName }}
+  SIGN_SECRET: {{ .Values.global.jwt.signSecret }}
 

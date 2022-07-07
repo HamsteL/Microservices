@@ -2,8 +2,9 @@ package models
 
 import (
 	"errors"
-	"github.com/jinzhu/gorm"
 	"time"
+
+	"github.com/jinzhu/gorm"
 )
 
 type User struct {
@@ -37,7 +38,7 @@ func (u *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
 
 func (u *User) FindUserByID(db *gorm.DB, uid uint32) (*User, error) {
 	var err error
-	err = db.Debug().Model(User{}).Where("id = ?", uid).Take(&u).Error
+	err = db.Select([]string{"first_name", "last_name", "email"}).Where("id = ?", uid).Find(&u).Error
 	if err != nil {
 		return &User{}, err
 	}

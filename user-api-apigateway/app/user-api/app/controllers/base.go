@@ -2,22 +2,25 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"log"
 	"net/http"
 	"user-api/app/models"
+
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 type Server struct {
-	DB     *gorm.DB
-	Router *mux.Router
+	DB         *gorm.DB
+	Router     *mux.Router
+	signSecret string
 }
 
 func (server *Server) Initialize(settings models.AppSettings) {
 	ConnectToDB(server, &settings)
 	server.Router = mux.NewRouter()
+	server.signSecret = settings.SignSecret
 	server.initializeRoutes()
 }
 

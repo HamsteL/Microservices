@@ -2,12 +2,13 @@ package app
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"strings"
 	"user-api/app/controllers"
 	"user-api/app/models"
+
+	"github.com/joho/godotenv"
 )
 
 var server = controllers.Server{}
@@ -34,6 +35,7 @@ func GetEnvVars() models.AppSettings {
 	appSettings.DbHost = TrimStr(os.Getenv("DB_HOST"))
 	appSettings.DbName = TrimStr(os.Getenv("DB_NAME"))
 	appSettings.ApiPort = fmt.Sprintf(":%s", TrimStr(os.Getenv("API_PORT")))
+	appSettings.SignSecret = TrimStr(os.Getenv("SIGN_SECRET"))
 
 	return appSettings
 }

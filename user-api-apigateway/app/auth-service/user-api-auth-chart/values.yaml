@@ -9,6 +9,7 @@ service:
 
 ingress:
   host: user-api-app-service.default.svc.cluster.local
+  host2: arch.homework
 
 auth:
   authServicePort: "8111"

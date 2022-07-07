@@ -3,16 +3,19 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"user-api/app/models"
 	"user-api/app/responses"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/gorilla/mux"
 )
 
-func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
+const sessionIdCookieName string = "session_id"
 
+func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responses.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -56,7 +59,17 @@ func (server *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, userGotten)
+
+	if userAuthorized, err := server.IsAuthorizedUser(r, user.Email); err != nil || !userAuthorized {
+		responses.ERROR(w, http.StatusForbidden, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, map[string]string{
+		"FirstName": userGotten.FirstName,
+		"LastName":  userGotten.LastName,
+		"Email":     userGotten.Email,
+	})
 }
 
 func (server *Server) GetUserByEmail(w http.ResponseWriter, r *http.Request) {
@@ -102,12 +115,28 @@ func (server *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userFromDb := models.User{}
+	userGotten, err := userFromDb.FindUserByID(server.DB, uint32(uid))
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if userAuthorized, err := server.IsAuthorizedUser(r, userGotten.Email); err != nil || !userAuthorized {
+		responses.ERROR(w, http.StatusForbidden, err)
+		return
+	}
+
 	updatedUser, err := user.UpdateUser(server.DB, uint32(uid))
 	if err != nil {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	responses.JSON(w, http.StatusOK, updatedUser)
+	responses.JSON(w, http.StatusOK, map[string]string{
+		"FirstName": updatedUser.FirstName,
+		"LastName":  updatedUser.LastName,
+		"Email":     updatedUser.Email,
+	})
 }
 
 func (server *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -124,6 +153,49 @@ func (server *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	w.Header().Set("Entity", fmt.Sprintf("%d", uid))
+
+	if userAuthorized, err := server.IsAuthorizedUser(r, user.Email); err != nil || !userAuthorized {
+		responses.ERROR(w, http.StatusForbidden, err)
+		return
+	}
+
 	responses.JSON(w, http.StatusNoContent, "")
+}
+
+func (server *Server) getEmailFromCookie(r *http.Request) (string, error) {
+	sessionIdCookie, err := r.Cookie(sessionIdCookieName)
+	if err != nil {
+		fmt.Printf("Cant find auth cookie\r\n")
+		return "", fmt.Errorf("Cant find auth cookie")
+	}
+
+	claims := jwt.MapClaims{}
+	_, err = jwt.ParseWithClaims(sessionIdCookie.Value, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(server.signSecret), nil
+	})
+	if err != nil {
+		return "Error while decode token", err
+	}
+
+	for key, val := range claims {
+		fmt.Printf("Key: %v, value: %v\n", key, val)
+		if key == "Email" {
+			return val.(string), nil
+		}
+	}
+
+	return "", fmt.Errorf("Email not found in Token")
+}
+
+func (server *Server) IsAuthorizedUser(r *http.Request, userEmail string) (bool, error) {
+	emailFromCookie, err := server.getEmailFromCookie(r)
+	if err != nil {
+		return false, err
+	}
+
+	if userEmail != emailFromCookie {
+		return false, fmt.Errorf("Forbiden content")
+	}
+
+	return true, nil
 }

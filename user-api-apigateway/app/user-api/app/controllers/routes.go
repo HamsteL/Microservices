@@ -6,7 +6,7 @@ import (
 )
 
 func (server *Server) initializeRoutes() {
-	server.Router.Use(middlewares.PrometheusMiddleware)
+	server.Router.Use(middlewares.HttpMiddleware)
 
 	//Users routes
 	server.Router.HandleFunc("/users", server.CreateUser).Methods("POST")

@@ -8,4 +8,5 @@ type AppSettings struct {
 	DbHost     string
 	DbName     string
 	ApiPort    string
+	SignSecret string
 }

@@ -15,5 +15,5 @@ FROM alpine:3.15.4
 WORKDIR /root/
 COPY --from=build /app/main .
 COPY --from=build /app/.env .
-EXPOSE 8000
+EXPOSE 8111
 ENTRYPOINT ["./main"]
