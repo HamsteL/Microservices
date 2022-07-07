@@ -6,6 +6,7 @@ import (
 	"auth-service/auth/responses"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -22,7 +23,7 @@ func (server *Server) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	u, findErr := models.FindUserByEmail(server.AppSettings.ApiHost, server.AppSettings.ApiPort, email)
 	if findErr != nil || u != nil {
-		responses.ERROR(w, http.StatusBadRequest, fmt.Errorf("user already exists", findErr))
+		responses.ERROR(w, http.StatusBadRequest, fmt.Errorf("user already exists %v", email, findErr))
 		return
 	}
 
@@ -33,28 +34,18 @@ func (server *Server) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errSes := server.Storage.CreateSession(user.Email)
-	if errSes != nil {
-		responses.ERROR(w, http.StatusInternalServerError, errSes)
-		return
-	}
-
-	responses.JSON(w, http.StatusOK, map[string]string{
+	responses.JSON(w, http.StatusCreated, map[string]string{
 		"status":    "User registered",
 		"sessionId": server.Storage.Sessions[email],
 		"email":     email,
+		"userId":    strconv.Itoa(int(user.ID)),
 	})
 }
 
 func (server *Server) Login(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := getAuthCookie(r)
-	if err != nil {
-		responses.ERROR(w, http.StatusUnauthorized, err)
-		return
-	}
-
-	if sessionId != "" {
-		responses.JSON(w, http.StatusBadRequest, "You already logged in. Log out first")
+	if err == nil || sessionId != "" {
+		responses.ERROR(w, http.StatusBadRequest, fmt.Errorf("You already logged in. Log out first", err))
 		return
 	}
 

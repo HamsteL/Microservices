@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: user-api-app-ingress
   annotations:
-    nginx.ingress.kubernetes.io/auth-url: http://user-api-auth-service.default.svc.cluster.local/auth/nginx
+    nginx.ingress.kubernetes.io/auth-url: http://user-api-auth-service.default.svc.cluster.local/auth
     nginx.ingress.kubernetes.io/auth-response-headers: x-auth-token
     nginx.ingress.kubernetes.io/auth-method: GET
 spec:

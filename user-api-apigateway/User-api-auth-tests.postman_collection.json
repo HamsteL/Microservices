@@ -1,0 +1,500 @@
+{
+	"info": {
+		"_postman_id": "2a1e25d7-2833-4ff3-8e03-b7aa64b66e18",
+		"name": "User-api-auth-tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13381170"
+	},
+	"item": [
+		{
+			"name": "user1-signup",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"user1-firstname\", utils.randomString(10, 10));",
+							"pm.environment.set(\"user1-lastname\", utils.randomString(10, 10));",
+							"",
+							"",
+							"pm.environment.set(\"user1-email\", pm.environment.get(\"user1-firstname\") + \"@email.ru\");",
+							"pm.environment.set(\"user1-password\", pm.environment.get(\"user1-firstname\") + \"-password-test\");"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 1 successfuly registered\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"User 1 have userId\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"userId\");",
+							"    var jsonData = JSON.parse(responseBody);",
+							"",
+							"    pm.environment.set(\"user1-id\", jsonData.userId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/auth/signup?email={{user1-email}}&password={{user1-password}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"signup"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "{{user1-email}}"
+						},
+						{
+							"key": "password",
+							"value": "{{user1-password}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user1-login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 1 successfuly logined\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"User 1 auth cookie created\", function () {",
+							"    pm.expect(pm.cookies.has('session_id')).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/auth/login?email={{user1-email}}&password={{user1-password}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "{{user1-email}}"
+						},
+						{
+							"key": "password",
+							"value": "{{user1-password}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user1-get-data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 1 can get his data\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/users/{{user1-id}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{user1-id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user1-change-data",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 1 successfully changed firstname and lastname\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"first_name\": \"{{user1-firstname}}\",\n    \"last_name\": \"{{user1-lastname}}\"\n}"
+				},
+				"url": {
+					"raw": "http://{{baseUrl}}/users/{{user1-id}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{user1-id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user1-logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 1 successfuly logout\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"User 2 auth cookie deleted\", function () {",
+							"    pm.expect(pm.cookies.has('session_id')).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/auth/logout",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user2-signup",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"user2-firstname\", utils.randomString(10, 10));",
+							"pm.environment.set(\"user2-lastname\", utils.randomString(10, 10));",
+							"",
+							"",
+							"pm.environment.set(\"user2-email\", pm.environment.get(\"user2-firstname\") + \"@email.ru\");",
+							"pm.environment.set(\"user2-password\", pm.environment.get(\"user2-firstname\") + \"-password-test\");"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 1 successfuly registered\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"User 2 have userId\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"userId\");",
+							"    var jsonData = JSON.parse(responseBody);",
+							"",
+							"    pm.environment.set(\"user2-id\", jsonData.userId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/auth/signup?email={{user2-email}}&password={{user2-password}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"signup"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "{{user2-email}}"
+						},
+						{
+							"key": "password",
+							"value": "{{user2-password}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user2-login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 2 successfuly logined\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"User 2 auth cookie created\", function () {",
+							"    pm.expect(pm.cookies.has('session_id')).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/auth/login?email={{user2-email}}&password={{user2-password}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "{{user2-email}}"
+						},
+						{
+							"key": "password",
+							"value": "{{user2-password}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user2-request-user1-data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 2 can't get User 1 data\", function () {",
+							"    pm.response.to.have.status(403);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/users/{{user1-id}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{user1-id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user2-try-change-user1-data",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 2 can't change User 1 data\", function () {",
+							"    pm.response.to.have.status(403);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"first_name\": \"{{user2-firstname}}\",\n    \"last_name\": \"{{user2-lastname}}\"\n}"
+				},
+				"url": {
+					"raw": "http://{{baseUrl}}/users/{{user1-id}}",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{user1-id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user2-logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User 2 successfuly logout\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"User 2 auth cookie deleted\", function () {",
+							"    pm.expect(pm.cookies.has('session_id')).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{baseUrl}}/auth/logout",
+					"protocol": "http",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"utils = {",
+					"  randomString: function randomString(minValue, maxValue, dataSet = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ') {",
+					"    if (!minValue) {",
+					"        minValue = 20;",
+					"        maxValue = 20;",
+					"    }",
+					"",
+					"    if (!maxValue) {",
+					"        maxValue = minValue;",
+					"    }",
+					"",
+					"    let length = _.random(minValue, maxValue),",
+					"        randomString = \"\";",
+					"",
+					"    for (let i = 0; i < length; i++)",
+					"        randomString += dataSet.charAt(Math.floor(Math.random() * dataSet.length));",
+					"    return randomString;",
+					"}",
+					"};"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"console.log(\"Request:\")",
+					"console.log(`-- Request url: ${pm.request.url}`)",
+					"console.log(`-- Request headers: ${pm.request.headers}`)",
+					"console.log(`-- Request body: ${(pm.request.body) ? pm.request.body : \"Empty body\"}`)",
+					"console.log(\"Response:\")",
+					"console.log(`-- Response code: ${pm.response.code}`)",
+					"console.log(`-- Response headers: ${pm.response.headers}`)",
+					"console.log(`-- Response body: ${pm.response.text()}`)",
+					""
+				]
+			}
+		}
+	]
+}

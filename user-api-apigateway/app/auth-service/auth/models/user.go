@@ -50,6 +50,10 @@ func FindUserByEmail(host, port, email string) (*User, error) {
 		return nil, errParse
 	}
 
+	if (User{} == user) {
+		return nil, nil
+	}
+
 	return &user, nil
 }
 

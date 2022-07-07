@@ -11,3 +11,5 @@ spec:
     port:  {{ .Values.service.appPort }}
     targetPort: {{ .Values.service.appPort }}
     protocol: TCP
+  selector:
+    {{- include "user-api-app-chart.selectorLabels" . | nindent 4 }}
